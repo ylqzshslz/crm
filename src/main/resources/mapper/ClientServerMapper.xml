@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.yuzhou.mapper.serverhjl.ClientServerMapper">
+	<insert id="insertClientServer" parameterType="ClientServer">
+		insert into
+		clientServer
+		(serverTypeId,serverTitle,clientCode,serverContent,serverCreateId,serverCreateDate)
+		values
+		(#{serverTypeId},#{serverTitle},#{clientCode},#{serverContent},#{serverCreateId},#{serverCreateDate})
+	</insert>
+
+	<resultMap type="ClientServer" id="ClientServerResultMap">
+		<id column="serverId" property="serverId"></id>
+		<result column="serverTypeId" property="serverTypeId" />
+		<result column="serverTitle" property="serverTitle" />
+		<result column="clientCode" property="clientCode" />
+		<result column="serverStatus" property="serverStatus" />
+		<result column="serverContent" property="serverContent" />
+		<result column="serverCreateId" property="serverCreateId" />
+		<result column="serverCreateDate" property="serverCreateDate" />
+		<result column="serverDueId" property="serverDueId" />
+		<result column="serverDueDate" property="serverDueDate" />
+		<result column="serverProcessing" property="serverProcessing" />
+		<result column="processingDate" property="processingDate" />
+		<result column="processingResult" property="processingResult" />
+		<result column="clientContentment" property="clientContentment" />
+		<association property="clientInfo" javaType="clientInfo">
+			<id column="clientCode" property="clientCode"></id>
+			<result column="clientName" property="clientName" />
+		</association>
+		<association property="dataServerType" javaType="dataServerType">
+		    <id column="dstId" property="dstId"></id>
+		    <result column="dstName" property="dstName" />
+		</association>
+		<association property="sysUser" javaType="sysUser">
+		    <id column="userId" property="userId"></id>
+		    <result column="userName" property="userName" />
+		</association>
+	</resultMap>
+
+    <select id="selectClientServerAll" resultMap="ClientServerResultMap">
+		select
+		cs.serverId,c.clientName,cs.serverTitle,d.dstName,s.userName,cs.serverCreateDate
+		from clientServer cs join clientInfo c on cs.clientCode=c.clientCode
+		join dataServerType d on cs.serverTypeId=d.dstId
+		join sysUser s on
+		cs.serverCreateId=s.userId
+        order by cs.serverId
+	</select>
+    
+    <select id="selectClientServerAllInfo" parameterType="ClientServer" 
+    resultMap="ClientServerResultMap">
+		select
+		cs.serverId,c.clientName,cs.serverTitle,d.dstName,s.userName,cs.serverCreateDate,
+		cs.serverContent,cs.serverDueId,cs.serverDueDate
+		from clientServer cs join clientInfo c on cs.clientCode=c.clientCode
+		join dataServerType d on cs.serverTypeId=d.dstId
+		join sysUser s on
+		cs.serverCreateId=s.userId where cs.serverId=#{serverId}
+        order by cs.serverId
+	</select>
+
+	<select id="selectClientServerByTerm" parameterType="ClientServer"
+		resultMap="ClientServerResultMap">
+		select
+		cs.serverId,c.clientName,cs.serverTitle,d.dstName,s.userName,cs.serverCreateDate
+		from clientServer cs join clientInfo c on cs.clientCode=c.clientCode
+		join dataServerType d on cs.serverTypeId=d.dstId
+		join sysUser s on
+		cs.serverCreateId=s.userId
+		<where>
+            <if test="clientInfo.clientName!=null and clientInfo.clientName!=''">
+                and c.clientName like concat('%',#{clientName},'%')
+            </if>
+            <if test="serverTitle!=null and serverTitle!=''">
+                and cs.serverTitle like concat('%',#{serverTitle},'%')
+            </if>
+            <if test="dataServerType.dstName!=null and dataServerType.dstName!=''">
+                and d.dstName like concat('%',#{dstName},'%')
+            </if>
+        </where>
+        order by cs.serverId
+        limit #{beginNum},#{maxNum}   
+	</select>
+	
+	<!-- rept -->
+	<resultMap type="clientServer" id="clientServerResultMap">
+	    <result column="clientCode" property="clientCode"/>
+		<result column="clientContentment" property="clientContentment" />
+		<association property="clientInfo" javaType="clientInfo">
+		    <id column="cclientCode" property="clientCode"/>
+			<result column="cclientContentment" property="clientContentment" />
+		</association>
+	</resultMap>
+
+	<select id="selectClientInfoAndClientServerAll" resultMap="clientServerResultMap">
+		select c.clientContentment
+		from clientInfo c left join clientServer cs 
+		on c.clientCode=cs.clientCode
+	</select>
+	
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuzhou.mapper.repthjl.ClientReprieveLoseMapper">
+    
+    <resultMap type="ClientReprieveLose" id="ClientReprieveLoseResultMap">
+        <id column="clientReprieveLoseId" property="clientReprieveLoseId"/>
+        <result column="clientCode" property="clientCode"/>
+        <association property="clientInfo" javaType="clientInfo">
+            <id column="cclientCode" property="clientCode"/>
+            <result column="cclientLoseDate" property="clientLoseDate"/>
+            <result column="cclientName" property="clientName"/>
+            <result column="cclientCustId" property="clientCustId"/>
+            <result column="cclientLoseReason" property="clientLoseReason"/>
+        </association>
+    </resultMap>
+    
+    <select id="selectClientReprieveLoseAll" resultMap="ClientReprieveLoseResultMap">
+        select cr.clientReprieveLoseId,
+               c.clientLoseDate cclientLoseDate,
+               c.clientName cclientName,
+               c.clientCustId cclientCustId,
+               c.clientLoseReason cclientLoseReason
+        from clientInfo c left join clientReprieveLose cr
+        on c.clientCode=cr.clientCode 
+        where clientState=3
+    </select>
+    
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuzhou.mapper.salehjl.SysUserMapper">
+     <resultMap type="SysUser" id="SysUserResultMap">
+        <id column="userId" property="userId"/>
+        <result column="userName" property="userName"/>
+        <result column="userPassword" property="userPassword"/>
+       	<result column="userRoleId" property="userRoleId"/>
+        <result column="userFlag" property="userFlag"/>
+        <result column="daId" property="daId"/>
+        <association property="dataArea" javaType="DataArea">        
+             <id column="ddaId" property="daId"/>
+           	 <result column="ddaName" property="daName"/>
+        </association>
+    </resultMap>
+
+    <select id="selectSysUser" resultMap="SysUserResultMap">
+        select 
+        	 su.daId,
+       		 su.userid ,
+       		 su.username,
+       		 su.userroleid,
+       		 da.daName  
+        FROM sysuser su JOIN dataarea da 
+        on su.daId=da.daId 
+    </select>
+    
+    <select id="selectSysUserCount" parameterType="SysUser" resultType="int">
+        select count(*) from SysUser
+        <where>
+            <if test="userName!='' and userName!=null">
+                and userName like concat('%',#{userName},'%')
+            </if>
+            <if test="userRoleId!=null and userRoleId!=''">
+                and userRoleId like concat('%',#{userRoleId},'%')
+            </if>
+            <if test="daId!=null and daId!=''">
+                and daId like concat('%',#{daId},'%')
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserPaging" parameterType="SysUser" resultMap="SysUserResultMap">
+        select s.*,
+               d.daId ddaId,
+               d.daName ddaName
+        from SysUser s left join DataArea d
+        on s.daId=d.daId
+        <where>
+            <if test="userName!='' and userName!=null">
+                and s.userName like concat('%',#{userName},'%')
+            </if>
+            <if test="userRoleId!=null and userRoleId!=''">
+                and s.userRoleId like concat('%',#{userRoleId},'%')
+            </if>
+            <if test="daId!=null and daId!=''">
+                and s.daId like concat('%',#{daId},'%')
+            </if>
+        </where>
+        order by s.userId desc 
+        limit #{beginNum},#{maxPageNum}
+    </select>
+    
+     <delete id="deleteSysUserBatch" parameterType="int">
+        delete from SysUser where userId in(
+        <foreach collection="array" item="userId" separator=",">
+            #{userId}
+        </foreach>
+        )
+    </delete>
+    
+    
+    
+    
+    <!-- 登录功能，按用户名查询SysUser表 -->
+    <select id="selectSysUserByUserName" parameterType="SysUser" resultType="SysUser">
+        select * 
+        from sysuser 
+        where userName = #{userName}      
+    </select>
+    
+    <!-- 按用UserRoleId(户权限管理)查询所用用户 -->
+    <select id="selectSysUserByUserRoleId" parameterType="SysUser" resultType="SysUser">
+        select * 
+        from sysuser 
+        where userRoleId = #{userRoleId}      
+    </select>
+    
+    <!--按用户名修改密码 -->
+    <update id="updateSysUserByUserName" parameterType="SysUser">
+        update sysuser set userPassword = #{userPassword} 
+        where userName = #{userName}
+    </update>
+    
+      <!--按用户名编号查询用户 -->
+    <select id="selectSysUserByUserId" parameterType="SysUser" resultType="SysUser">
+        select * 
+        from sysuser 
+        where userId = #{userId}      
+    </select>
+          
+</mapper>

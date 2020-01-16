@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuzhou.mapper.repthjl.OrdersMapper">
+
+	<resultMap type="orders" id="ordersResultMap">
+		<id column="ordersId" property="ordersId" />
+		<result column="ordersDate" property="ordersDate" />
+		<result column="clientCode" property="clientCode" />
+		<result column="ordersTotal" property="ordersTotal" />
+		<association property="clientInfo" javaType="clientInfo">
+			<id column="clientCode" property="clientCode"></id>
+			<result column="clientName" property="clientName" />
+		</association>
+	</resultMap>
+
+	<select id="selectClientInfoAndOrdersAll" resultMap="ordersResultMap">
+		select o.ordersId,
+		       c.clientName,
+		       o.ordersTotal
+		from clientInfo c left join orders o
+		on c.clientCode=o.clientCode
+		order by ordersId
+	</select>
+	
+	<select id="selectOrdersByOrdersDate" resultMap="ordersResultMap">
+	    select o.ordersDate
+		from clientInfo c left join orders o
+		on c.clientCode=o.clientCode
+		order by ordersId
+	</select>
+	
+	 <!-- 分页功能，查询销售机会状态(0 未分配)多条件模糊查询总记录数 -->
+    <!-- <select id="selectOrdersCount" parameterType="Orders" resultType="java.lang.Integer">
+        select count(*)
+        from clientInfo c join orders o
+        on c.clientCode=o.clientCode
+        <where>
+            <if test="c.clientName!=null and c.clientName!=''">
+                and c.clientName like concat('%',#{clientName},'%')
+            </if>
+            <if test="o.ordersDate!=null and o.ordersDate!=''">
+                and o.ordersDate like concat('%',#{ordersDate},'%')
+            </if>
+            <if test="o.ordersTotal!=null and o.ordersTotal!=''">
+                and o.ordersTotal like concat('%',#{ordersTotal},'%')
+            </if>
+        </where> 
+              
+    </select>  -->
+
+</mapper>

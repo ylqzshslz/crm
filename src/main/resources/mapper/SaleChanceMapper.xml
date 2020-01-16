@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuzhou.mapper.salehjl.SaleChanceMapper">
+    <!-- 销售管理->销售机会管理功能，按ChanceStatus(销售机会状态为0 未分配)多条件模糊查询机会 -->
+    <select id="selectSaleChanceByChanceStatus" parameterType="SaleChance" resultType="SaleChance">
+        select *
+        from salechance
+        <where>
+                chanceStatus = #{chanceStatus}
+            <if test="chanceCustName!=null and chanceCustName!=''">
+                and chanceCustName like concat('%',#{chanceCustName},'%')
+            </if>
+            <if test="chanceTitle!=null and chanceTitle!=''">
+                and chanceTitle like concat('%',#{chanceTitle},'%')
+            </if>
+            <if test="chanceLinkman!=null and chanceLinkman!=''">
+                and chanceLinkman like concat('%',#{chanceLinkman},'%')
+            </if>
+        </where>
+        order by chanceId  desc
+        limit #{beginNum},#{maxNum}    
+    </select> 
+    
+    <!-- 分页功能，查询销售机会状态(0 未分配)多条件模糊查询总记录数 -->
+    <select id="selectSaleChanceCount" parameterType="SaleChance" resultType="java.lang.Integer">
+        select count(*) from salechance
+        <where>
+                chanceStatus = #{chanceStatus}
+            <if test="chanceCustName!=null and chanceCustName!=''">
+                and chanceCustName like concat('%',#{chanceCustName},'%')
+            </if>
+            <if test="chanceTitle!=null and chanceTitle!=''">
+                and chanceTitle like concat('%',#{chanceTitle},'%')
+            </if>
+            <if test="chanceLinkman!=null and chanceLinkman!=''">
+                and chanceLinkman like concat('%',#{chanceLinkman},'%')
+            </if>
+        </where>    
+    </select> 
+    
+    <!--新建销售机会 -->
+    <insert id="insertSaleChance" parameterType="SaleChance">
+       insert into SaleChance values(null,#{chanceSource},#{chanceCustName},#{chanceTitle},#{chanceRate},#{chanceLinkman},#{chanceTel},#{chanceDesc},#{chanceCreateId},#{chanceCreateDate},#{chanceDueId},#{chanceDueDate},#{chanceStatus})
+    </insert> 
+    
+    <!-- 按chanceId更新salechance表 -->
+    <update id="updaeSaleChanceByChanceId" parameterType="SaleChance">
+        update salechance set chanceSource = #{chanceSource}, 
+                              chanceCustName = #{chanceCustName},
+                              chanceTitle = #{chanceTitle},
+                              chanceRate = #{chanceRate},
+                              chanceLinkman = #{chanceLinkman}, 
+                              chanceTel = #{chanceTel},
+                              chanceDesc = #{chanceDesc},
+                              chanceCreateId = #{chanceCreateId},
+                              chanceCreateDate = #{chanceCreateDate},
+                              chanceDueId = #{chanceDueId},
+                              chanceDueDate = #{chanceDueDate},
+                              chanceStatus = #{chanceStatus}
+        where chanceId = #{chanceId}                      
+    </update>
+    
+    <!-- 按chanceId删除salechance表 -->
+    <delete id="delSaleChanceByChanceId" parameterType="SaleChance">
+        delete from salechance where chanceId = #{chanceId}
+    </delete>
+    
+    <!-- 按chanceId销售机会编号查询sysUser系统用表、saleChance销售机会表、salePlan销售机会执行计划表 -->
+	<resultMap type="SaleChance"
+		id="sysUserAndSaleChanceAndSalePlan">
+		<id column="chanceId" property="chanceId" />
+		<result column="chanceSource" property="chanceSource" />
+		<result column="chanceCustName" property="chanceCustName" />
+		<result column="chanceTitle" property="chanceTitle" />
+		<result column="chanceRate" property="chanceRate" />
+		<result column="chanceLinkman" property="chanceLinkman" />
+		<result column="chanceTel" property="chanceTel" />
+		<result column="chanceDesc" property="chanceDesc" />
+		<result column="chanceCreateId" property="chanceCreateId" />
+		<result column="chanceCreateDate" property="chanceCreateDate" />
+		<result column="chanceDueId" property="chanceDueId" />
+		<result column="chanceDueDate" property="chanceDueDate" />
+		<result column="chanceStatus" property="chanceStatus" />
+		<association property="sysUser" javaType="SysUser">
+			<id column="uuserId" property="userId" />
+			<result column="uuserName" property="userName" />
+			<result column="uuserPassword" property="userPassword" />
+			<result column="udaId" property="daId" />
+			<result column="uuserRoleId" property="userRoleId" />
+			<result column="uuserFlag" property="userFlag" />
+		</association>
+		<collection property="salePlans" ofType="SalePlan">
+			<id column="pplanId" property="planId" />
+			<result column="pplanChcId" property="planChcId" />
+			<result column="pplanTodo" property="planTodo" />
+			<result column="pplanResult" property="planResult" />
+		</collection>
+	</resultMap>
+	<select id="selectSysUserAndSaleChanceAndSalePlanBychanceId"
+		parameterType="SaleChance" resultMap="sysUserAndSaleChanceAndSalePlan">
+		select c.*,
+		u.userId uuserId ,
+		u.userName uuserName,
+		u.userPassword uuserPassword,
+		u.daId udaId,
+		u.userRoleId uuserRoleId,
+		u.userFlag uuserFlag,
+		p.planId pplanId,
+		p.planChcId pplanChcId,
+		p.planTodo pplanTodo,
+		p.planResult pplanResult,
+		from salechance c left join sysuser u on c.chancedueid = u.userid
+		join
+		saleplan p on c.chanceid = p.planchcid
+		where chanceId = #{chanceId}
+	</select>
+    
+    
+    
+      
+</mapper>
